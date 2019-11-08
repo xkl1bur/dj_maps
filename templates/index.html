@@ -1,0 +1,38 @@
+{% load leaflet_tags %}
+{% load geojson_tags %}
+
+<html>
+  <head>
+    {% leaflet_js %}
+    {% leaflet_css %}
+    <style>
+      .leaflet-container { height: 50%; }
+    </style>
+    <script type="text/javascript">
+      var dataurl = '{% url "data" %}';
+      window.addEventListener("map:init", function (event) {
+        var map = event.detail.map;
+        // Download GeoJSON data with Ajax
+        fetch(dataurl)
+          .then(function(resp) {
+            return resp.json();
+          })
+          .then(function(data) {
+            L.geoJson(data, {
+              onEachFeature: function onEachFeature(feature, layer) {
+                var props = feature.properties;
+                var content = `<img width="300" src="${props.picture_url}"/><h3>${props.title}</h3><p>${props.description}</p>`;
+                layer.bindPopup(content);
+            }}).addTo(map);
+            // L.marker(data.features[0].properties.coord.coordinates).addTo(map)
+              // .bindPopup("<b>Hello world!</b><br />I am a popup.").openPopup();
+            // console.log(data.features[0].properties.coord.coordinates);
+          });
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Spots</h1>
+    {% leaflet_map "main" %}
+  </body>
+</html>
